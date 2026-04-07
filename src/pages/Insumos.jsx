@@ -10,6 +10,7 @@ export const Insumos = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingInsumo, setEditingInsumo] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
   
   // Form State
   const [formData, setFormData] = useState({ label: '', product: '', price: '' });
@@ -66,6 +67,29 @@ export const Insumos = () => {
     i.label.toLowerCase().includes(searchTerm.toLowerCase()) || 
     i.product.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const parseQuantity = (str) => {
+    if (typeof str === 'number') return str;
+    if (!str) return 0;
+    const match = str.match(/[\d.]+/);
+    return match ? parseFloat(match[0]) : 0;
+  };
+
+  const calculateTotal = () => {
+    return selectedIds.reduce((sum, id) => {
+      const item = insumos.find(i => i.id === id);
+      if (!item) return sum;
+      return sum + (parseQuantity(item.product) * item.price);
+    }, 0);
+  };
+
+  const handleRowClick = (id) => {
+    setSelectedIds(prev => [...prev, id]);
+  };
+
+  const clearSelection = () => {
+    setSelectedIds([]);
+  };
 
   const handleOpenModal = (insumo = null) => {
     if (insumo) {
@@ -125,6 +149,30 @@ export const Insumos = () => {
           <p className="form-label" style={{ fontSize: '1rem' }}>Inventario de materiales y productos</p>
         </div>
         <div className="flex gap-2">
+          {selectedIds.length > 0 && (
+            <div className="flex items-center gap-4 mr-4 animate-fade-in" style={{ 
+              background: 'var(--card-bg)', 
+              padding: '0.5rem 1rem', 
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--border-color)',
+              boxShadow: 'var(--shadow-sm)'
+            }}>
+              <div className="flex flex-col">
+                <span className="text-muted" style={{ fontSize: '0.7rem', textTransform: 'uppercase' }}>Total Seleccionado</span>
+                <span style={{ fontWeight: 700, color: 'var(--primary)', fontSize: '1.1rem' }}>
+                  {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(calculateTotal())}
+                </span>
+              </div>
+              <button 
+                className="btn-icon danger" 
+                onClick={(e) => { e.stopPropagation(); clearSelection(); }}
+                title="Limpiar selección"
+                style={{ height: '32px', width: '32px' }}
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          )}
           <input 
             type="file" 
             accept=".xlsx, .xls" 
@@ -165,38 +213,71 @@ export const Insumos = () => {
             </thead>
             <tbody>
               {filteredInsumos.length > 0 ? (
-                filteredInsumos.map(i => (
-                  <tr key={i.id}>
-                    <td>
-                      <span style={{ 
-                        background: 'rgba(215, 43, 31, 0.1)', 
-                        color: 'var(--primary)', 
-                        padding: '0.2rem 0.5rem', 
-                        borderRadius: 'var(--radius-sm)',
-                        fontSize: '0.8rem',
-                        fontWeight: 600
-                      }}>
-                        {i.label || 'N/A'}
-                      </span>
-                    </td>
+                filteredInsumos.map(i => {
+                  const isSelected = selectedIds.includes(i.id);
+                  const countInSelection = selectedIds.filter(id => id === i.id).length;
+                  
+                  return (
+                    <tr 
+                      key={i.id} 
+                      onClick={() => handleRowClick(i.id)}
+                      style={{ 
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        backgroundColor: isSelected ? 'rgba(215, 43, 31, 0.05)' : 'transparent',
+                        position: 'relative'
+                      }}
+                      className="hover:bg-gray-50"
+                    >
+                      <td>
+                        <div className="flex items-center gap-2">
+                          {isSelected && (
+                            <span style={{ 
+                              background: 'var(--primary)', 
+                              color: 'white', 
+                              borderRadius: '50%', 
+                              width: '20px', 
+                              height: '20px', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center',
+                              fontSize: '0.7rem',
+                              fontWeight: 700
+                            }}>
+                              {countInSelection}
+                            </span>
+                          )}
+                          <span style={{ 
+                            background: 'rgba(215, 43, 31, 0.1)', 
+                            color: 'var(--primary)', 
+                            padding: '0.2rem 0.5rem', 
+                            borderRadius: 'var(--radius-sm)',
+                            fontSize: '0.8rem',
+                            fontWeight: 600
+                          }}>
+                            {i.label || 'N/A'}
+                          </span>
+                        </div>
+                      </td>
                     <td style={{ fontWeight: 600 }}>{i.product}</td>
                     <td>
                       {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(i.price)}
                     </td>
                     <td style={{ textAlign: 'right' }}>
                       <div className="flex justify-between items-center" style={{ justifyContent: 'flex-end', gap: '0.5rem' }}>
-                        <button className="btn-icon" onClick={() => handleOpenModal(i)}>
+                        <button className="btn-icon" onClick={(e) => { e.stopPropagation(); handleOpenModal(i); }}>
                           <Edit2 size={18} />
                         </button>
                         {isAdmin && (
-                          <button className="btn-icon danger" onClick={() => handleDelete(i.id)}>
+                          <button className="btn-icon danger" onClick={(e) => { e.stopPropagation(); handleDelete(i.id); }}>
                             <Trash2 size={18} />
                           </button>
                         )}
                       </div>
                     </td>
                   </tr>
-                ))
+                );
+              })
               ) : (
                 <tr>
                   <td colSpan={4} className="text-center text-muted" style={{ padding: '2rem' }}>
