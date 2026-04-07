@@ -12,7 +12,7 @@ export const Clientes = () => {
   const [editingClient, setEditingClient] = useState(null);
   
   // Form State
-  const [formData, setFormData] = useState({ name: '', location: '', phone: '' });
+  const [formData, setFormData] = useState({ name: '', city: '', phone: '' });
 
   const fileInputRef = useRef(null);
 
@@ -26,7 +26,7 @@ export const Clientes = () => {
         let currentId = generateId(clientes);
         const newClientes = data.map(row => {
           const name = findValueByPossibleKeys(row, ['Nombre', 'Cliente', 'Name', 'Razon Social']);
-          const location = findValueByPossibleKeys(row, ['Ubicacion', 'Ubicación', 'Ciudad', 'Direccion', 'Dirección', 'Location']);
+          const city = findValueByPossibleKeys(row, ['Ciudad', 'Ubicacion', 'Ubicación', 'Direccion', 'Dirección', 'Location']);
           const phone = findValueByPossibleKeys(row, ['Telefono', 'Teléfono', 'Celular', 'Phone']);
           
           if (!name) return null; // Skip if no name found
@@ -34,7 +34,7 @@ export const Clientes = () => {
           return {
             id: currentId++,
             name: name.toString(),
-            location: location.toString(),
+            city: city.toString(),
             phone: phone.toString()
           };
         }).filter(Boolean);
@@ -61,10 +61,10 @@ export const Clientes = () => {
   const handleOpenModal = (client = null) => {
     if (client) {
       setEditingClient(client);
-      setFormData({ name: client.name, location: client.location, phone: client.phone });
+      setFormData({ name: client.name, city: client.city || client.location || '', phone: client.phone });
     } else {
       setEditingClient(null);
-      setFormData({ name: '', location: '', phone: '' });
+      setFormData({ name: '', city: '', phone: '' });
     }
     setIsModalOpen(true);
   };
@@ -142,7 +142,7 @@ export const Clientes = () => {
             <thead>
               <tr>
                 <th>Cliente</th>
-                <th>Ubicación</th>
+                <th>Ciudad</th>
                 <th>Teléfono</th>
                 <th style={{ width: '100px', textAlign: 'right' }}>Acciones</th>
               </tr>
@@ -152,7 +152,7 @@ export const Clientes = () => {
                 filteredClientes.map(c => (
                   <tr key={c.id}>
                     <td style={{ fontWeight: 600 }}>{c.name}</td>
-                    <td>{c.location || '-'}</td>
+                    <td>{c.city || c.location || '-'}</td>
                     <td>{c.phone || '-'}</td>
                     <td style={{ textAlign: 'right' }}>
                       <div className="flex justify-between items-center" style={{ justifyContent: 'flex-end', gap: '0.5rem' }}>
@@ -198,11 +198,11 @@ export const Clientes = () => {
             />
           </div>
           <div className="form-group">
-            <label className="form-label">Ubicación</label>
+            <label className="form-label">Ciudad</label>
             <input 
               type="text" 
-              value={formData.location}
-              onChange={(e) => setFormData({...formData, location: e.target.value})}
+              value={formData.city}
+              onChange={(e) => setFormData({...formData, city: e.target.value})}
               placeholder="Ej: Bogotá, Centro"
             />
           </div>
