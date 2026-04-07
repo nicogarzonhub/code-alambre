@@ -25,9 +25,9 @@ export const Insumos = () => {
       if (data && data.length > 0) {
         let currentId = generateId(insumos);
         const newInsumos = data.map(row => {
-          const label = findValueByPossibleKeys(row, ['Etiqueta', 'Categoria', 'Tipo', 'Tag', 'Label', 'Grupo']);
-          const product = findValueByPossibleKeys(row, ['Producto', 'Nombre', 'Insumo', 'Material', 'Product', 'Descripcion']);
-          const priceRaw = findValueByPossibleKeys(row, ['Precio', 'Valor', 'Costo', 'Price']);
+          const label = findValueByPossibleKeys(row, ['Insumo', 'Etiqueta', 'Categoria', 'Tipo', 'Tag', 'Label', 'Grupo']);
+          const product = findValueByPossibleKeys(row, ['Cantidad', 'Producto', 'Nombre', 'Material', 'Product', 'Descripcion']);
+          const priceRaw = findValueByPossibleKeys(row, ['Unidad', 'Precio', 'Valor', 'Costo', 'Price']);
           
           if (!product) return null; // Skip if no product name found
           
@@ -146,7 +146,7 @@ export const Insumos = () => {
           <Search size={20} color="var(--text-muted)" />
           <input 
             type="text" 
-            placeholder="Buscar por etiqueta o producto..." 
+            placeholder="Buscar por insumo o cantidad..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{ maxWidth: '300px' }}
@@ -157,9 +157,9 @@ export const Insumos = () => {
           <table>
             <thead>
               <tr>
-                <th>Etiqueta</th>
-                <th>Producto</th>
-                <th>Precio</th>
+                <th>Insumo</th>
+                <th>Cantidad</th>
+                <th>Unidad</th>
                 <th style={{ width: '100px', textAlign: 'right' }}>Acciones</th>
               </tr>
             </thead>
@@ -216,7 +216,7 @@ export const Insumos = () => {
       >
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Etiqueta (Opcional)</label>
+            <label className="form-label">Insumo (Opcional)</label>
             <input 
               type="text" 
               value={formData.label}
@@ -226,7 +226,7 @@ export const Insumos = () => {
             />
           </div>
           <div className="form-group">
-            <label className="form-label">Nombre del Producto *</label>
+            <label className="form-label">Nombre de Cantidad *</label>
             <input 
               type="text" 
               required
@@ -236,7 +236,7 @@ export const Insumos = () => {
             />
           </div>
           <div className="form-group mb-4">
-            <label className="form-label">Precio</label>
+            <label className="form-label">Unidad</label>
             <input 
               type="number" 
               min="0"
